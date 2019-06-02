@@ -4,15 +4,14 @@ import mockData from '../../../public/db.json';
 describe('filter', () => {
   const dealCounts = {
     all: 11,
-    broadband: 7,
-    tv: 6,
-    mobile: 3,
-    broadband_tv: 3,
-    broadband_mobile: 2,
+    broadband: 4,
+    broadband_tv: 4,
+    broadband_mobile: 1,
     Sky: 1,
     BT: 5,
-    BT_tv: 4,
-    BT_broadband_tv: 1
+    Plusnet: 3,
+    Plusnet_broadband: 3,
+    BT_broadband_tv: 2
   };
   const providers = {
     BT: 3,
@@ -69,18 +68,6 @@ describe('filter', () => {
     expect(result).toHaveLength(dealCounts.broadband);
     // Re-calling the set filter fn removes the filter
     store.setProductFilter('broadband');
-
-    // TV
-    store.setProductFilter('tv');
-    result = store.deals;
-    expect(result).toHaveLength(dealCounts.tv);
-    store.setProductFilter('tv');
-
-    // Mobile
-    store.setProductFilter('mobile');
-    result = store.deals;
-    expect(result).toHaveLength(dealCounts.mobile);
-    store.setProductFilter('mobile');
   });
 
   it('should return only matching deals with 2 product filters active', () => {
@@ -109,17 +96,22 @@ describe('filter', () => {
     expect(result).toHaveLength(dealCounts.BT);
     store.setProviderFilter(providers.BT);
 
+    store.setProviderFilter(providers.Plusnet);
+    result = store.deals;
+    expect(result).toHaveLength(dealCounts.Plusnet);
+    store.setProviderFilter(providers.Plusnet);
+
     store.setProviderFilter(providers.Sky);
     result = store.deals;
     expect(result).toHaveLength(dealCounts.Sky);
   });
 
   it('should return only matching deals with 1 provider and 1 product filters active', () => {
-    store.setProviderFilter(providers.BT);
-    store.setProductFilter('tv');
+    store.setProviderFilter(providers.Plusnet);
+    store.setProductFilter('broadband');
 
     const result = store.deals;
-    expect(result).toHaveLength(dealCounts.BT_tv);
+    expect(result).toHaveLength(dealCounts.Plusnet_broadband);
   });
 
   it('should return only matching deals with 1 provider and 2 product filters active', () => {

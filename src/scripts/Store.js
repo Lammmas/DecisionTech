@@ -15,6 +15,7 @@ class Store extends Observable {
     return this.filter();
   }
 
+  // Helper function for making testing easier
   get filters() {
     return { product: this.state.productFilters, provider: this.state.providerFilter };
   }
@@ -24,17 +25,24 @@ class Store extends Observable {
 
     if (!productFilters.length && providerFilter === null) this.state.filteredDeals = deals;
     else {
-      const capsProductfilters = productFilters.map(filter => {
-        if (filter === 'tv') return 'TV';
-        if (filter === 'fibre broadband') return 'Fibre Broadband';
-        return filter.charAt(0).toUpperCase() + filter.slice(1).toLowerCase();
-      });
-
       this.state.filteredDeals = deals.filter(deal => {
         if (deal.provider.id === providerFilter && !productFilters.length) return true;
         if (providerFilter && deal.provider.id !== providerFilter) return false;
         
-        return capsProductfilters.every(filter => deal.productTypes.includes(filter));
+        let { productTypes } = deal;
+        // Because Fibre Broadband should be treated the same as Broadband
+        productTypes = deal.productTypes
+          .filter(type => type !== 'Phone')
+          .map(type => type === 'Fibre Broadband' ? 'broadband' : type.toLowerCase());
+
+        // If the filters are not the same length as types, they can never be equal
+        if (productTypes.length !== productFilters.length) return false;
+
+        // Check if filters and types match in both directions
+        const hasAllFilters = productFilters.every(filter => productTypes.includes(filter));
+        const hasAllTypes = productTypes.every(type => productFilters.includes(type));
+        
+        return hasAllFilters && hasAllTypes;
       });
     }
   }
@@ -43,12 +51,14 @@ class Store extends Observable {
     return this.state.filteredDeals;
   }
 
+  // When updating the base data we want to make sure that the base filtered data get updated too
   setDeals(data) {
     this.state.deals = data;
-    this.state.filteredDeals = data;
+    this.setFilteredDeals();
     this.notify(this.state);
   }
 
+  // I would use Flow with Enum type here to make sure only valid filters are passed in
   setProductFilter(value) {
     const filter = value.trim().toLowerCase();
     const index = this.state.productFilters.indexOf(filter);
