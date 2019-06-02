@@ -5,6 +5,7 @@ class Store extends Observable {
     super();
     this.state = {
       deals: [],
+      filteredDeals: [],
       productFilters: [],
       providerFilter: null
     };
@@ -14,12 +15,23 @@ class Store extends Observable {
     return this.filter();
   }
 
+  get filters() {
+    return { product: this.state.productFilters, provider: this.state.providerFilter };
+  }
+
+  setFilteredDeals() {
+    const { productFilters, providerFilter, deals } = this.state;
+    // TODO: apply filters to data
+    this.state.filteredDeals = deals;
+  }
+
   filter() {
-    return this.state.deals;
+    return this.state.filteredDeals;
   }
 
   setDeals(data) {
     this.state.deals = data;
+    this.state.filteredDeals = data;
     this.notify(this.state);
   }
 
@@ -31,11 +43,15 @@ class Store extends Observable {
     } else {
       this.state.productFilters.splice(index, 1);
     }
+
+    this.setFilteredDeals();
     this.notify(this.state);
   }
 
   setProviderFilter(value = null) {
     this.state.providerFilter = value;
+
+    this.setFilteredDeals();
     this.notify(this.state);
   }
 }
