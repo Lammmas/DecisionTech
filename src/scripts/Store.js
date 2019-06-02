@@ -21,8 +21,22 @@ class Store extends Observable {
 
   setFilteredDeals() {
     const { productFilters, providerFilter, deals } = this.state;
-    // TODO: apply filters to data
-    this.state.filteredDeals = deals;
+
+    if (!productFilters.length && providerFilter === null) this.state.filteredDeals = deals;
+    else {
+      const capsProductfilters = productFilters.map(filter => {
+        if (filter === 'tv') return 'TV';
+        if (filter === 'fibre broadband') return 'Fibre Broadband';
+        return filter.charAt(0).toUpperCase() + filter.slice(1).toLowerCase();
+      });
+
+      this.state.filteredDeals = deals.filter(deal => {
+        if (deal.provider.id === providerFilter && !productFilters.length) return true;
+        if (providerFilter && deal.provider.id !== providerFilter) return false;
+        
+        return capsProductfilters.every(filter => deal.productTypes.includes(filter));
+      });
+    }
   }
 
   filter() {
@@ -48,6 +62,7 @@ class Store extends Observable {
     this.notify(this.state);
   }
 
+  // I would use Flow and Enum/number type in order to make sure nobody passes a string here
   setProviderFilter(value = null) {
     this.state.providerFilter = value;
 
